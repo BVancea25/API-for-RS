@@ -38,10 +38,10 @@ class DB_UTILS:
             print(f"An error occurred while creating the node: {e}")
             return None
     
-    def get_shoe(self, shoe_id):
+    def get_product(self, product_id):
         try:
-            query = "MATCH (n:Item) WHERE id(n) = $node_id RETURN n"
-            result = self.session.run(query, node_id=shoe_id)
+            query = "MATCH (n:Item) WHERE n.id = $node_id RETURN n"
+            result = self.session.run(query, node_id=product_id)
             node = result.single()[0]
             properties = dict(node)
             del properties["profile"]
@@ -75,13 +75,12 @@ class DB_UTILS:
     def create_relationship(self, from_id, to_id, rel_type, properties={}):
         try:
             if(rel_type!="REVIEW"):
-                query = "MATCH (from), (to) WHERE id(from) = $from_id AND id(to) = $to_id CREATE (from)-[rel:" + rel_type + "]->(to) SET rel += $properties RETURN rel"
+                query = "MATCH (u:User), (i:Item) WHERE u.id = $from_id AND i.id = $to_id CREATE (u)-[rel:" + rel_type + "]->(i) SET rel += $properties RETURN rel"
                 result = self.session.run(query, from_id=from_id, to_id=to_id, properties=properties)
                 rel = result.single()[0]
-                print("ceva")
                 return rel
             else:
-                query="MATCH (u:User) where id(u)=$from_id match (u)-[r:bought]->(i:Item) where id(i)=$to_id return r"
+                query="MATCH (u:User) where u.id=$from_id match (u)-[r:bought]->(i:Item) where i.id=$to_id return r"
                 result = self.session.run(query, from_id=from_id, to_id=to_id, properties=properties)
                 result_list=list(result)
                 if not result_list:
@@ -92,6 +91,18 @@ class DB_UTILS:
                     result = self.session.run(query, from_id=from_id, to_id=to_id, properties=properties)
                     rel=result.single()[0]
                     return rel
+        except Exception as e:
+            print(f"An error occurred while creating the relationship: {e}")
+            return None
+        
+    def delete_relationship(self, from_id, to_id, rel_type):
+        try:
+            
+            query = "match (u:User)-[r:"+rel_type+"]-(i:Item) where u.id=$from_id and i.id=$to_id delete r"
+            result = self.session.run(query, from_id=from_id, to_id=to_id)
+            rel = result.single()[0]
+            return rel
+          
         except Exception as e:
             print(f"An error occurred while creating the relationship: {e}")
             return None

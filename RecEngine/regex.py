@@ -19,9 +19,14 @@ def extract_characteristics(html):
     data = {}
     for match in matches:
         characteristic = match[0].strip()
-        values = re.split(r',|și|\+',match[1])#despartim valorile dupa "," "și" "+""
+        if(characteristic=='Nr. elemente'):
+            characteristic='Număr elemente'
+        values = re.split(r',|și|\+| |  ',match[1])#despartim valorile dupa "," "și" "+""
         values = [value.strip() for value in values]  #stergem spatii ramase
         values=[value.replace(" ","") for value in values]#stergem spatiile dintre valoare si unitatea de masura
+        values=[value.replace("mm","") for value in values]
+        values=[value.replace("cm","") for value in values]
+        values=list(filter(None,values))
         values=[value.capitalize() for value in values]
         data[characteristic] = values
     return data

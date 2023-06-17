@@ -1,5 +1,6 @@
 from flask import request,jsonify
 from Config.db import database
+from RecEngine.recommendation import Recommendation
 
 def handle_data():
     req=request.get_json()
@@ -18,4 +19,9 @@ def handle_data():
    
 
     return jsonify({'message':'Data added'}),201
+
+def encode():
+    database.one_hot_encode_product_properties()
+    return jsonify({'message':'ceva'}),200
+
 
