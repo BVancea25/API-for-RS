@@ -1,7 +1,7 @@
 from db_utils import DB_UTILS
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
 from numpy.linalg import norm
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class Recommendation(DB_UTILS):
@@ -38,62 +38,58 @@ class Recommendation(DB_UTILS):
                 del properties["profile"]
                 ids.append(properties["id"])
                 del properties["id"]
+                print(properties)
                 modified_result.append(properties)  # Add mo
             
-
-                        # Extract unique attribute values from the data
-            attributes = set()
+            #print(modified_result)
+            # Extract unique attribute values from the data
+            unique_values = {}
             for item in modified_result:
-                attributes.update(item.keys())
+                for key, value in item.items():
+                    if key not in unique_values:
+                        unique_values[key] = set(value)
+                    else:
+                        unique_values[key] |= set(value)
 
-            # Create a list to store the encoded data
+            
+            # Create an empty list to store encoded data
             encoded_data = []
 
-            # Perform one-hot encoding
-            encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+            # One-hot encode each item and append to encoded_data list
+            # !!! Daca ordinea caracteristicilor nu este consistenta vectorii vor fi afectati !!!
+            index=0
             for item in modified_result:
                 encoded_item = {}
-                for attribute in attributes:
-                    if attribute in item:
-                        encoded_values = encoder.fit_transform([[value] for value in item[attribute]])
-                        encoded_item[attribute] = encoded_values.flatten().tolist()
-                    else:
-                        encoded_item[attribute] = [0] * len(attributes)
-                encoded_data.append(encoded_item)
-
-            # Print the encoded data
-            for item in encoded_data:
-                print(item)
-            """data=np.array([[node['n.brand'],node['n.type'],node['n.color']] for node in result_list])  
-            ids=np.array([s["id"] for s in result_list])
-            
-            encoder=OneHotEncoder()
-            encoded_data=encoder.fit_transform(data)
-            array=encoded_data.toarray()
-            for x in range(len(ids)):
-                self.update_product_vector(ids[x],array[x]) #inseram vectorii in baza de date
-
-            return ids,array"""
+                encoded_vector=[]
+                for key, value in item.items():
+                    encoded_values = np.zeros(len(unique_values[key]), dtype=int)
+                    for v in value:
+                        encoded_values[list(unique_values[key]).index(v)] = 1
+                    encoded_item[key] = encoded_values
+                    encoded_vector.extend(encoded_values)
+                self.update_product_vector(ids[index],encoded_vector)
+                index+=1
+                                
         except Exception as e:
             print(f"An error occurred while one hot encoding:{str(e)}")
             return None
     
-        #construim profilul userului cu ajutorul profilelor papucilor cu care a interactionat acesta     
+        #construim profilul userului cu ajutorul profilelor produselor    
     def build_user_profile(self,user_id):
             try: 
                 #returneaza vectorii papucilor alaturi de weightul relatiei
                 query = """ 
                     MATCH (u:User)
-                    WHERE ID(u) = $user_id
+                    WHERE u.id = $user_id
                     MATCH (u)-[r:SAW|bought|REVIEW]->(i:Item)
                     RETURN i.profile,r.weight
                     """
                 result=self.session.run(query, user_id=user_id)
                 result_list=list(result)
-                user_profile=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+                user_profile=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
                 for x in result_list:      #am facut asta in cazul in care avem mai multe relatii nu doar SAW si bought
-                    if x["r.weight"]!=1:    
+                    #if x["r.weight"]!=1:    
                         for index,value in enumerate(x["i.profile"]):#inmultim vectorul cu weightul corespunzator
                             if value !=0:
                                 x["i.profile"][index]*=x["r.weight"]
@@ -104,7 +100,7 @@ class Recommendation(DB_UTILS):
                         user_profile[i]/=len(result_list)   
                 print(user_profile)
                 query=""" 
-                    MATCH (u:User) WHERE ID(u)=$user_id
+                    MATCH (u:User) WHERE u.id=$user_id
                     SET u.profile=$user_profile
                 """
                 self.session.run(query,user_id=user_id,user_profile=user_profile)
@@ -112,16 +108,16 @@ class Recommendation(DB_UTILS):
                 print(f"Error while calculating user profile:{str(e)}")
                 return None
         
-    def best_recommendation(self,user_id):
+    def best_recommendation_cb(self,user_id):
     
         try:
         #returneaza profilul userului target, profilul tuturor papucilor cu care acesta nu a interactionat si idurile acestora
             query = """
                 MATCH (u:User)
-                WHERE id(u) = $user_id
+                WHERE u.id = $user_id
                 MATCH (i:Item)
                 WHERE NOT EXISTS((u)-[:SAW|bought]->(i))
-                RETURN u.profile AS user_profile, COLLECT(i.profile) AS item_profiles, COLLECT(id(i)) AS ids
+                RETURN u.profile AS user_profile, COLLECT(i.profile) AS item_profiles, COLLECT(i.id) AS ids
                 """
             result=self.session.run(query,user_id=user_id)
             result_list=list(result)
@@ -131,9 +127,48 @@ class Recommendation(DB_UTILS):
             
             cos_sim=np.dot(item_profiles,user_profile)/(norm(item_profiles,axis=1)*norm(user_profile))#calculam similaritatea cosinus
             
-            return self.get_shoe(result_list[0][2][np.argmax(cos_sim)])#returnam papucul cu similaritatea cea mai mare
+            return self.get_product(result_list[0][2][np.argmax(cos_sim)])#returnam papucul cu similaritatea cea mai mare
+        except Exception as e:
+            print(f"Error occured while retreiving recommendation:{str(e)}")
+            return None
+        
+    def best_recommendation_embbeding(self,product_id,user_id):
+    
+        try:
+        
+            query = """
+                MATCH (i:Item) where
+                i.id=$product_id
+                RETURN i.embedding
+                """
+            result=self.session.run(query,product_id=product_id)
+            node=list(result)
+            target_embedding=np.array(node[0][0])
+            
+            query="""
+                MATCH (u:User)
+                WHERE u.id = $user_id
+                MATCH (i:Item)
+                WHERE NOT EXISTS((u)-[:SAW|bought]->(i))
+                RETURN i.embedding, COLLECT(i.id) as ids
+            """
+            result=self.session.run(query,user_id=user_id)
+            result_list=list(result)
+            embeddings = [np.array(record["i.embedding"]) for record in result_list]
+            ids = [record["ids"] for record in result_list]
+
+            distances=[]
+            for embedding in embeddings:
+                
+                distances.append(cosine_distance(target_embedding,embedding))
+
+            return ids[np.argmin(distances)]
+            
+
+            
         except Exception as e:
             print(f"Error occured while retreiving recommendation:{str(e)}")
             return None
     
-    
+def cosine_distance(a, b):
+    return 1 - cosine_similarity(a.reshape(1,-1), b.reshape(1,-1))

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 app=Flask(__name__)
-from Controllers.dataController import handle_data,encode
+from Controllers.dataController import handle_data,encode,get_recommendation
 from Controllers.userController import add_user
 from Controllers.productController import add_product
 from Controllers.orderController import add_order
@@ -35,6 +35,10 @@ def initialize_vectors():
     response=encode()
     return response
 
+@app.route('/rec',methods=['GET'])
+def get_rec():
+    response=get_recommendation()
+    return response
 
 if __name__=='__main__':
     app.run()

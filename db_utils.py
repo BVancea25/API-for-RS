@@ -50,6 +50,16 @@ class DB_UTILS:
             print(f"An error occurred while getting the shoe: {e}")
             return None
     
+    def get_all_users_ids(self):
+        try:
+            query = "MATCH (n:User) RETURN n.id"
+            result = self.session.run(query)
+            ids=[record["n.id"] for record in result]
+            return ids
+        except Exception as e:
+            print(f"An error occurred while getting the shoe: {e}")
+            return None
+    
     def delete_node(self, node_id):
         try:
             query = "MATCH (n) WHERE id(n) = $node_id DETACH DELETE n"
