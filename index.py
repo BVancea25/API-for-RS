@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 app=Flask(__name__)
-from Controllers.dataController import handle_data,encode,get_recommendation
+from Controllers.dataController import encode,get_recommendation
 from Controllers.userController import add_user
 from Controllers.productController import add_product
 from Controllers.orderController import add_order
@@ -10,10 +10,6 @@ from Config.db import database
 
 database.connect()
 
-@app.route('/data',methods=['POST'])
-def data_modeling():
-    response=handle_data()
-    return response
 
 @app.route('/user',methods=['POST'])
 def post_user():

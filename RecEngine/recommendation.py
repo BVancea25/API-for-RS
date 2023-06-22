@@ -125,6 +125,9 @@ class Recommendation(DB_UTILS):
             
             user_profile=np.array(result_list[0][0])
             item_profiles=np.array(result_list[0][1])
+
+            #f user_profile==np.zeros(self._uniqueValues):
+             #   return self.popular_products()
             
             cos_sim=np.dot(item_profiles,user_profile)/(norm(item_profiles,axis=1)*norm(user_profile))#calculam similaritatea cosinus
             
@@ -162,10 +165,10 @@ class Recommendation(DB_UTILS):
             for embedding in embeddings:
                 
                 distances.append(cosine_distance(target_embedding,embedding))
-            print(distances)
+            
             product_index=np.argmin(distances)
             distances[product_index]=np.array([[1.0]])
-            print(distances)
+            
             return ids[np.argmin(distances)]
             
 
@@ -174,5 +177,24 @@ class Recommendation(DB_UTILS):
             print(f"Error occured while retreiving embedding recommendation:{str(e)}")
             return None
     
+    def popular_products(self):
+        try:
+            query="""match (n:Item)-[r:bought]-(u:User)  return COUNT(r) as popularity,n.id as id"""
+            result=self.session.run(query)
+                 
+            max=-1
+            maxID=-1
+            for record in result:
+                if record["popularity"]>max:
+                    max=record["popularity"]
+                    maxID=record["id"]
+            
+            return maxID
+                
+        except Exception as e:
+            print(f"Error occured while retreiving popular items:{str(e)}")
+            return None
+        
 def cosine_distance(a, b):
     return 1 - cosine_similarity(a.reshape(1,-1), b.reshape(1,-1))
+
