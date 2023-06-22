@@ -6,6 +6,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class Recommendation(DB_UTILS):
 
+    _uniqueValues=0
+
     def __init__(self, uri, username, password):
         super().__init__(uri, username, password)
 
@@ -38,7 +40,6 @@ class Recommendation(DB_UTILS):
                 del properties["profile"]
                 ids.append(properties["id"])
                 del properties["id"]
-                print(properties)
                 modified_result.append(properties)  # Add mo
             
             #print(modified_result)
@@ -50,10 +51,9 @@ class Recommendation(DB_UTILS):
                         unique_values[key] = set(value)
                     else:
                         unique_values[key] |= set(value)
-
+            #print(unique_values)
+            self._uniqueValues=sum(len(values) for values in unique_values.values())
             
-            # Create an empty list to store encoded data
-            encoded_data = []
 
             # One-hot encode each item and append to encoded_data list
             # !!! Daca ordinea caracteristicilor nu este consistenta vectorii vor fi afectati !!!
@@ -86,7 +86,8 @@ class Recommendation(DB_UTILS):
                     """
                 result=self.session.run(query, user_id=user_id)
                 result_list=list(result)
-                user_profile=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                
+                user_profile=np.zeros(self._uniqueValues)
 
                 for x in result_list:      #am facut asta in cazul in care avem mai multe relatii nu doar SAW si bought
                     #if x["r.weight"]!=1:    
@@ -95,7 +96,7 @@ class Recommendation(DB_UTILS):
                                 x["i.profile"][index]*=x["r.weight"]
                                 user_profile[index]+=x["i.profile"][index]#adunam valorile tuturor vectorilor
 
-                for i in range(len(user_profile)):#impartim rezultatul la numarul papucilor
+                for i in range(len(user_profile)):#impartim rezultatul la numarul produselor
                     if user_profile[i]!=0:
                         user_profile[i]/=len(result_list)   
                 print(user_profile)
@@ -161,13 +162,16 @@ class Recommendation(DB_UTILS):
             for embedding in embeddings:
                 
                 distances.append(cosine_distance(target_embedding,embedding))
-
+            print(distances)
+            product_index=np.argmin(distances)
+            distances[product_index]=np.array([[1.0]])
+            print(distances)
             return ids[np.argmin(distances)]
             
 
             
         except Exception as e:
-            print(f"Error occured while retreiving recommendation:{str(e)}")
+            print(f"Error occured while retreiving embedding recommendation:{str(e)}")
             return None
     
 def cosine_distance(a, b):
