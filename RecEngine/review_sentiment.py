@@ -16,6 +16,5 @@ class Sentiment_Analyzer:
 
         else :
             overall_sentiment = "Neutral"
-    
         return  overall_sentiment
         

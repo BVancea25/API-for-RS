@@ -4,7 +4,7 @@ app=Flask(__name__)
 from Controllers.dataController import encode,get_recommendation
 from Controllers.userController import add_user
 from Controllers.productController import add_product
-from Controllers.orderController import add_order
+from Controllers.relationController import add_relation
 from Config.db import database
 
 
@@ -21,9 +21,9 @@ def post_product():
     response=add_product()
     return response
 
-@app.route('/order',methods=['POST'])
-def post_order():
-    response=add_order()
+@app.route('/relation',methods=['POST'])
+def post_relation():
+    response=add_relation()
     return response
 
 @app.route('/rec',methods=['POST'])

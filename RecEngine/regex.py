@@ -3,7 +3,7 @@ import re
 def extract_description(html):
     matches = re.findall(r'<p class="lead">(.*?)</p>', html, re.DOTALL)#extragem descrierile
     description=''
-    if matches:
+    if matches is not None:
         for match in matches:
             cleaned_text = match.split('\n', 1)[0].strip()#excludem partea cu livrarea
             description+=cleaned_text
@@ -26,6 +26,9 @@ def extract_characteristics(html):
         values=[value.replace(" ","") for value in values]#stergem spatiile dintre valoare si unitatea de masura
         values=[value.replace("mm","") for value in values]
         values=[value.replace("cm","") for value in values]
+        
+        values = [value.split('&')[0] for value in values]
+        
         values=list(filter(None,values))
         values=[value.capitalize() for value in values]
         data[characteristic] = values
