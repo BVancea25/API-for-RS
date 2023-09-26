@@ -19,7 +19,7 @@ def add_relation():
                 weight=0.7
             case _:
                 weight=1.0
-        if(req['rel_type']):
+        if(req['rel_type']=='review'):
             response=database.create_relationship(req['user_id'],req['product_id'],req['rel_type'],{"weight":weight,"text":req['text'],"rating":req['rating']})
         else: 
             response=database.create_relationship(req['user_id'],req['product_id'],req['rel_type'],{"weight":weight})

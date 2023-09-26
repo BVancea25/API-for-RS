@@ -72,7 +72,7 @@ class DB_UTILS:
     
     def get_all_users_ids(self):
         try:
-            query = "MATCH (n:User) RETURN n.id"
+            query = "MATCH (n:User)-[]-(i:Item) RETURN n.id"
             result = self.session.run(query)
             ids=[record["n.id"] for record in result]
             return ids

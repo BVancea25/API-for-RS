@@ -4,6 +4,7 @@ from RecEngine.regex import extract_characteristics,extract_description
 from RecEngine.translator import Translator
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 translator_key=os.getenv('TRANSLATOR_KEY')
 import numpy as np
@@ -19,16 +20,13 @@ def add_product():
       return jsonify({'message':'Missing html'}),400
    try:
       description=extract_description(req['html'])#extragem descrierea
-      print('ceva1')
+      
       translated_description=translator.translate(description)#traducem descrierea
-      print('ceva2')
+      
       data=extract_characteristics(req['html'])#extragem caracteristicile
-      print('ceva3')
+      
       embedding=vectorizer.get_embedding(translated_description)#vectorizam descrierea
-      embedding.tolist()
-      print("Ceva4")
-      flattened_embedding = [item for sublist in embedding for item in sublist]#transformam lista de liste intr-o lista
-      data['embedding']=flattened_embedding
+      data['embedding']=embedding
       data['id']=req['id']
       data['profile']=[]
       

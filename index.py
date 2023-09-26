@@ -36,5 +36,7 @@ def get_rec():
     response=get_recommendation()
     return response
 
+
+
 if __name__=='__main__':
     app.run()
