@@ -1,18 +1,31 @@
 from flask import request,jsonify
-from Config.db import database
+from Services.UserService import add_user_service,delete_user_service
+from Services.DataService import calculate_users_profiles_service
 
-def add_user():
+def delete_user():
     req=request.get_json()
-    if 'name' not in req :
-        return jsonify({'message':'Missing name'}),400
-    if 'id' not in req :
-        return jsonify({'message':'Missing id'}),400
-    if(database.check_user(req['id'])==-1):
-        return jsonify({'message':'User already exists'}),403
-    try:
-        database.create_node("User",{"name":req['name'], "id":req['id'],"profile":[]})
-        return jsonify({'message':'User added'}),201
-    except Exception as e:
-        print(f"An error occurred while creating the node: {e}")
-        return jsonify({'message':'User not added'}),401
+    response=delete_user_service(req)
+    if(response=="Successful deletion!"):
+        return jsonify({'message':'Deletion successful'}),200
+    else:
+        return jsonify({'message':response}),400
+    
+    
+def add_user():
+    
+    req=request.get_json()
+    response=add_user_service(req)
+    
+    if(response=="Save successful"):
+         return jsonify({'message':'Save successful'}),200
+    else:
+        return jsonify({'message':response}),400
+    
 
+def calculate_users_profiles():
+    response=calculate_users_profiles_service()
+    
+    if(response=="Calculation of user profile successful"):
+         return jsonify({'message':response}),200
+    else:
+        return jsonify({'message':response}),400
