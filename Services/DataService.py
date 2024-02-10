@@ -80,9 +80,9 @@ def calculate_user_profile(results):
         
         max_weight=0.0
         n_products=0
-        user_profile=np.zeros(8)
+        user_profile=np.zeros(10)
         for result in results:
-            print(result)
+            
             product_profile=result[0]
             weight=result[1]
             embedding=result[2]
@@ -98,7 +98,7 @@ def calculate_user_profile(results):
                 
         
         user_profile=[element / n_products for element in user_profile]
-        print(user_profile)
+        
         return user_profile,most_relevant_embedding
     
     except Exception as e:
@@ -108,21 +108,25 @@ def calculate_user_profile(results):
 
 def calculate_user_profile_pipeline(req):
     try:
-        user=User.nodes.get(client_id=req['user_id'])
-        get_rel_query=(
-                f"MATCH (u:User) WHERE u.client_id = {user.client_id} MATCH (u)-[r:HAS]->(p:Product) RETURN p.profile, r.weight, p.embedding"
-                        )
-        results=db.cypher_query(get_rel_query)
-        results=list(results)
-        del results[1]
+        user_id=req.args.get('user_id')
+        if(user_id==None):
+            return "no user"
+        else:
+            user=User.nodes.get(client_id=user_id)
+            get_rel_query=(
+                    f"MATCH (u:User) WHERE u.client_id = {user.client_id} MATCH (u)-[r:HAS]->(p:Product) RETURN p.profile, r.weight, p.embedding"
+                            )
+            results=db.cypher_query(get_rel_query)
+            results=list(results)
+            del results[1]
+                
+            user_profile,most_relevant_embedding=calculate_user_profile(results[0])
+            user.profile=user_profile
+            user.favorite_description=most_relevant_embedding
+            user.save()
+                
             
-        user_profile,most_relevant_embedding=calculate_user_profile(results[0])
-        user.profile=user_profile
-        user.favorite_description=most_relevant_embedding
-        user.save()
-            
-        
-        return "Calculation of user profile successful"
+            return "Calculation of user profile successful"
     except Exception as e:
         traceback.print_exc()
         return f"Calculation operation failed: {e}"

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 from neomodel import config
-
+from flask_cors import CORS
 app=Flask(__name__)
 from RecEngine.description_embeddings import Embedding
 vectorizer=Embedding()
@@ -13,6 +13,9 @@ from Controllers.relationController import add_relation
 from Controllers.recController import get_initial_rec,get_rec
 config.DATABASE_URL=database_url
 print(config.DATABASE_URL)
+
+
+CORS(app)
 
 @app.route('/user',methods=['POST'])
 def post_user():

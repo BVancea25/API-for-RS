@@ -9,9 +9,9 @@ def add_product_service(req):
         #description=extract_description(req['html'])
         
         #data=extract_characteristics(req['html'])
-        print(req['description'])
+        
         embedding=vectorizer.get_embedding(req['description'])
-        print(embedding)
+        
         Product(name=req['name'],embedding=embedding,profile=[],color=req['color'],type=req['type'],brand=req['brand'],client_id=req['id']).save()
         
         return "Saved product!"

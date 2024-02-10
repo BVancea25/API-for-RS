@@ -3,8 +3,8 @@ from Services.RelationService import add_relation_service
 from Services.RecService import get_initial_rec_service,get_rec_service
 def get_initial_rec():
     try:
-        req=request.get_json()
-        response=get_initial_rec_service(req)
+        
+        response=get_initial_rec_service(request)
     
         return response
     except Exception as e:
@@ -12,9 +12,9 @@ def get_initial_rec():
     
 def get_rec():
     try:
-        req=request.get_json()
-        add_relation_service(req)
-        response=get_rec_service(req)
+        add_relation_service(request)
+        
+        response=get_rec_service(request)
         return response
     except Exception as e:
         return jsonify({'message':e}),400
