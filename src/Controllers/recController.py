@@ -6,7 +6,7 @@ def get_initial_rec():
         
         response=get_initial_rec_service(request)
     
-        return response
+        return response,200
     except Exception as e:
         return jsonify({'message':e}),400
     
@@ -15,6 +15,6 @@ def get_rec():
         add_relation_service(request)
         
         response=get_rec_service(request)
-        return response
+        return response,200
     except Exception as e:
         return jsonify({'message':e}),400
