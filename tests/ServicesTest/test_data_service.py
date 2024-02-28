@@ -42,8 +42,6 @@ def test_user_profile_pipeline():
         'REQUEST_METHOD': 'GET'
     })
     
-    
-   
         
     result=calculate_user_profile_pipeline(request)
     

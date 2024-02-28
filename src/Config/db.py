@@ -8,5 +8,3 @@ password=os.getenv('NEO4J_PASS')
 
 database_url=f'neo4j+s://{user}:{password}@{uri}'
 
-#database=Recommendation(uri,user,password)
-#database=DB_UTILS(uri,user,password)

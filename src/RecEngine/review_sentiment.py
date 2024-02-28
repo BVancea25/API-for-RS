@@ -1,11 +1,11 @@
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-class Sentiment_Analyzer:
+class sentiment_analyzer:
     def __init__(self,text):
         self.analyzer=SentimentIntensityAnalyzer()
         self.text=text
 
-    def getSentiment(self):
+    def get_sentiment(self):
         sentiment_dict = self.analyzer.polarity_scores(self.text)
         
         if sentiment_dict['compound'] >= 0.05 :

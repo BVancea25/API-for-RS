@@ -51,7 +51,7 @@ def calculate_product_profiles_service():
         
         return "Profiles calculated!"
     except Exception as e:
-         return f"Create product operation failed: {e}"
+         return f"Error in calculating product profiles: {e}"
      
 def calculate_users_profiles_service():
     try:
@@ -80,7 +80,8 @@ def calculate_user_profile(results):
         
         max_weight=0.0
         n_products=0
-        user_profile=np.zeros(10)
+        user_profile=np.zeros(13)
+        most_relevant_embedding=[]
         for result in results:
             
             product_profile=result[0]
@@ -97,7 +98,7 @@ def calculate_user_profile(results):
             n_products+=1
                 
         
-        user_profile=[element / n_products for element in user_profile]
+        user_profile = [element / n_products if element != 0 else 0 for element in user_profile]
         
         return user_profile,most_relevant_embedding
     
@@ -108,8 +109,8 @@ def calculate_user_profile(results):
 
 def calculate_user_profile_pipeline(req):
     try:
-        user_id=req.args.get('user_id')
-        if(user_id==None):
+        user_id=req['user_id']
+        if(user_id=="none"):
             return "no user"
         else:
             user=User.nodes.get(client_id=user_id)

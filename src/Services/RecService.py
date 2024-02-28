@@ -9,7 +9,7 @@ from Models.Product import Product
 
 def popular_products():
         try:
-            query=f"MATCH (p:Product)<-[r:HAS]-(u:User) WITH p, COUNT(r) AS popularity ORDER BY popularity DESC LIMIT 3 RETURN p;"
+            query="MATCH (p:Product)<-[r:HAS]-(u:User) WITH p, COUNT(r) AS popularity ORDER BY popularity DESC LIMIT 3 RETURN p;"
             result=db.cypher_query(query)
             print("Sent popular data!!!")
             
@@ -30,7 +30,7 @@ def popular_products():
 def get_initial_rec_service(req):
     try:
         
-        user_id=req.args.get('user_id')
+        user_id=req['user_id']
         print(user_id)
         if(user_id=="none"): #utilizator neautentificat
             return popular_products()
@@ -122,7 +122,7 @@ def weighted_similarity(profile_similarities,description_similarities):
     i=0
     
     while(i<len(profile_similarities)):
-        similarities.append((profile_similarities[i]*0.8+description_similarities[i]*0.2)/2)
+        similarities.append((profile_similarities[i]*0.9+description_similarities[i]*0.1)/2)
         i+=1
         
     return similarities

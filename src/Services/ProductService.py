@@ -1,14 +1,9 @@
 from Models.Product import Product
-from RecEngine.regex import extract_characteristics,extract_description
 
 
 def add_product_service(req):
     try:
         from index import vectorizer #avoid circular import because of the dependency of index file
-        
-        #description=extract_description(req['html'])
-        
-        #data=extract_characteristics(req['html'])
         
         embedding=vectorizer.get_embedding(req['description'])
         
@@ -17,6 +12,7 @@ def add_product_service(req):
         return "Saved product!"
     except Exception as e:
          return f"Create product operation failed: {e}"
+     
      
 def delete_product_service(req):
     try:

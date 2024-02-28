@@ -24,5 +24,4 @@ def test_delete_user_service():
         result=delete_user_service(mock_req)
         
        
-    print(result)
     assert result=="Successful deletion!"

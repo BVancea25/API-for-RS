@@ -5,7 +5,7 @@ from nltk.tokenize import sent_tokenize
 
 class Embedding:
     _instance = None   
-    model = SentenceTransformer('all-mpnet-base-v2')  # Initialize the model once
+    model = None  # Initialize the model once
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -13,7 +13,8 @@ class Embedding:
         return cls._instance
     
     def __init__(self):
-        pass  
+        self.model = SentenceTransformer('all-mpnet-base-v2')
+          
 
     def get_embedding(self, text):
         sentences = sent_tokenize(text)

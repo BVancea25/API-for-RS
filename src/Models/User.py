@@ -1,9 +1,9 @@
-from neomodel import StructuredNode, StringProperty,IntegerProperty,RelationshipTo,ArrayProperty, FloatProperty,RelationshipFrom
+from neomodel import StructuredNode, StringProperty,IntegerProperty,ArrayProperty
 
 
 class User(StructuredNode):
-    name = StringProperty(required=True)
-    client_id=IntegerProperty(unique_index=True,required=True)
+    name = StringProperty()
+    client_id=IntegerProperty(unique=True,required=True,unique_index=True)
     profile=ArrayProperty()
     favorite_description=ArrayProperty()
 
